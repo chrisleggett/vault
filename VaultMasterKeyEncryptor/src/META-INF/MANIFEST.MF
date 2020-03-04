@@ -1,0 +1,55 @@
+Manifest-Version: 1.0
+Main-Class: 
+Class-Path: vault-java-driver-5.1.0.jar h2.jar oro.jar sns.jar auth.jar 
+ axis.jar flow.jar jjwt.jar json.jar ognl.jar guava.jar sjsxp.jar utils.
+ jar wss4j.jar bonecp.jar hsqldb.jar jose4j.jar ldapbp.jar pf-xml.jar sn
+ mp4j.jar twilio.jar wsdl4j.jar xmlsec.jar ehcache.jar encoder.jar jgrou
+ ps.jar regions.jar stax-ex.jar api-i18n.jar api-util.jar aws-core.jar h
+ ivemind.jar httpcore.jar ion-java.jar jaxws-rt.jar mimepull.jar profile
+ s.jar resolver.jar saaj-api.jar scim-sdk.jar sdk-core.jar tapestry.jar 
+ velocity.jar xmlbeans.jar axis-saaj.jar diffutils.jar disruptor.jar jav
+ assist.jar jaxb-core.jar jaxb-impl.jar jaxws-api.jar joda-time.jar kerb
+ -core.jar kerb-util.jar license4j.jar log4j-api.jar log4j-jcl.jar log4j
+ -jul.jar mina-core.jar ping-base.jar saaj-impl.jar scim-ldap.jar slf4j-
+ api.jar snakeyaml.jar spring-tx.jar commons-io.jar gdata-core.jar httpc
+ lient.jar javax.mail.jar jcifs-krb5.jar jsr173_api.jar jsr181-api.jar j
+ sr250-api.jar jsr311-api.jar kerby-asn1.jar kerby-pkix.jar kerby-util.j
+ ar log4j-core.jar pf-commons.jar pf-pingone.jar pf-profile.jar spring-a
+ op.jar spring-web.jar tinyradius.jar annotations.jar axis-jaxrpc.jar co
+ mmons-cli.jar commons-net.jar FastInfoset.jar jakarta-bsf.jar jakarta-o
+ ro.jar jersey-core.jar jgroups-aws.jar json-simple.jar kerb-client.jar 
+ kerb-common.jar kerb-crypto.jar pf-sms-util.jar pingcommons.jar provisi
+ oner.jar spring-core.jar spring-jdbc.jar wink-client.jar wink-common.ja
+ r api-asn1-api.jar api-asn1-ber.jar bcprov-jdk15.jar checker-qual.jar c
+ ommons-lang.jar commons-pool.jar gdata-client.jar hamcrest-all.jar jack
+ son-core.jar kerby-config.jar snmp4j-agent.jar spring-beans.jar streamb
+ uffer.jar swagger-core.jar apache-client.jar apacheds-i18n.jar commons-
+ codec.jar commons-dbcp2.jar commons-email.jar commons-lang3.jar commons
+ -math3.jar commons-pool2.jar failureaccess.jar hamcrest-core.jar jersey
+ -client.jar jersey-server.jar jmespath-java.jar log4j-1.2-api.jar pf-co
+ mmon-api.jar pf-email-util.jar ping-cert-svc.jar protocol-core.jar scim
+ -core-1.1.jar api-ldap-model.jar jersey-servlet.jar native-s3-ping.jar 
+ pf-crypto-luna.jar pf-runtime-api.jar pf-upgrade-jar.jar spring-context
+ .jar swagger-models.jar validation-api.jar aws-java-sdk-s3.jar commons-
+ logging.jar http-client-spi.jar jaaslounge-core.jar pf-core-plugins.jar
+  ping-common-api.jar provisioner-sdk.jar aws-java-sdk-ec2.jar aws-java-
+ sdk-kms.jar commons-compress.jar commons-digester.jar jackson-core-asl.
+ jar jackson-databind.jar jcip-annotations.jar jersey-multipart.jar list
+ enablefuture.jar log4j-slf4j-impl.jar pf-appserver-ext.jar pf-branding-
+ ping.jar ping-common-mgmt.jar reactive-streams.jar tapestry-contrib.jar
+  aws-java-sdk-core.jar commons-beanutils.jar commons-discovery.jar comm
+ ons-validator.jar pf-admin-api-core.jar pf-protocolengine.jar provision
+ er-admin.jar spring-expression.jar unboundid-ldapsdk.jar aws-query-prot
+ ocol.jar commons-fileupload.jar j2objc-annotations.jar jackson-jaxrs-ba
+ se.jar jackson-mapper-asl.jar commons-collections.jar jaaslounge-decodi
+ ng.jar jackson-annotations.jar javax.websocket-api.jar kerb-client-api-
+ all.jar swagger-annotations.jar pf-adminconsole-base.jar pf-crypto-aws-
+ cloudhsm.jar apacheds-kerberos-codec.jar error_prone_annotations.jar gd
+ ata-appsforyourdomain.jar geronimo-jaxrs_1.1_spec.jar jackson-dataforma
+ t-cbor.jar jackson-dataformat-yaml.jar swagger-annotations_2.10.jar pf-
+ authn-api-sdk-1.0.0.35.jar animal-sniffer-annotations.jar jackson-jaxrs
+ -json-provider.jar tyrus-standalone-client-jdk.jar aws-kms-master-key-e
+ ncryptor.jar geronimo-annotation_1.1_spec.jar wink-client-apache-httpcl
+ ient.jar jackson-module-jaxb-annotations.jar org.apache.servicemix.bund
+ les.antlr.jar
+

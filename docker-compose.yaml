@@ -1,0 +1,45 @@
+version: '3.1'
+
+services:
+
+  vault:
+    image: vault
+    container_name: vault
+    env_file:
+      ./env_vars
+    command: [sh, -c, '/vault/config/setup.sh']
+    ports:
+      - 8200:8200 
+    volumes:
+      - ./volumes/logs:/vault/logs
+      #- ./volumes/file:/vault/file
+      - ./volumes/config:/vault/config
+      - ./volumes/_data:/data
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - pingnet-s
+      
+  pingfederate:
+    image: pingidentity/pingfederate:edge
+    environment:
+      - PING_IDENTITY_ACCEPT_EULA=YES
+      - LICENSE_VERSION=10.0
+      #- VAULT_SSL_CERT=/opt/out/instance/server/default/conf/vault_public.pem
+    env_file:
+      - ~/.pingidentity/devops 
+    ports:
+      - 9999:9999
+      - 9031:9031
+    volumes:
+      - ./volumes/_data:/data
+      - ./server-profiles/pingfederate:/opt/in
+    networks:
+      - pingnet-s
+
+networks:
+  pingnet-s:  
+    ipam:
+      config:
+      - subnet: 10.10.0.0/16 
+  
