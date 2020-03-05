@@ -37,6 +37,23 @@ services:
     networks:
       - pingnet-s
 
+  pingaccess:
+    image: pingidentity/pingaccess:edge
+    environment:
+      - PING_IDENTITY_ACCEPT_EULA=YES
+      - LICENSE_VERSION=6.0
+      #- VAULT_SSL_CERT=/opt/out/instance/server/default/conf/vault_public.pem
+    env_file:
+      - ~/.pingidentity/devops 
+    ports:
+      - 9000:9000
+      - 3000:3000
+    volumes:
+      - ./volumes/_data:/data
+      - ./server-profiles/pingaccess:/opt/in
+    networks:
+      - pingnet-s
+
 networks:
   pingnet-s:  
     ipam:

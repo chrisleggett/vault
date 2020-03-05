@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# shellcheck source=pingcommon.lib.sh
+. "${HOOKS_DIR}/pingcommon.lib.sh"
+
+while [ ! -s /data/pingaccess_role_id.txt ]
+  do
+  printf "[*] Just waiting for the VAULT role id to show up..." 
+  printf '\xF0\x9F\x98\xA4\n' 
+  sleep 3
+done
+
+cat /opt/staging/instance/conf/vault.config.properties
+
+NEW_VAULT_ROLE_ID=$(grep 'role_id' /data/pingaccess_role_id.txt | awk '{print substr($NF, 1, length($NF))}')
+
+echo $NEW_VAULT_ROLE_ID
+
+sed -i "s/VAULT_ROLE_ID/$NEW_VAULT_ROLE_ID/g" /opt/staging/instance/conf/vault.config.properties
+
+cat /opt/staging/instance/conf/vault.config.properties

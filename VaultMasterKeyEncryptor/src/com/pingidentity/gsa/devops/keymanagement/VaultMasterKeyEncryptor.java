@@ -41,10 +41,11 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
 
         log.debug("Creating the VaultMasterKeyEncryptor.");
 
-        //load the vault parameters from the properties file
-        this.vaultConfigData = loadVaultConfigData();
-
         try {
+
+            //load the vault parameters from the properties file
+            this.vaultConfigData = loadVaultConfigData();
+
             // We need to get the roleid client token. This will be used in subsequent requests.
             this.vaultConfigData.setVaultToken(getTokenFromRoleId(vaultConfigData.getVaultRoleId()));
 
@@ -179,12 +180,20 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
         return decodedPlainText;
     }
 
-    private VaultConfigData loadVaultConfigData()  {
+    private VaultConfigData loadVaultConfigData() throws VaultMasterKeyEncryptorException {
 
         VaultConfigData vaultConfigData = new VaultConfigData();
+        String productName = VaultMasterKeyEncryptorUtil.getProductName();
+        String filepath = "";
 
-        String filepath = "/opt/out/instance/server/default/conf/vault.config.properties";
-        //String filepath = "out/production/VaultMasterKeyEncryptor/vault.config.properties";
+        if(productName.isEmpty()){
+            log.error("Error: Unable to determine product name from environment variable.");
+            throw new VaultMasterKeyEncryptorException("Error: Unable to determine product name from environment variable.");
+        } else if(productName.equals(VaultMasterKeyEncryptorUtil.PINGFEDERATE_PRODUCT_NAME)){
+            filepath = "/opt/out/instance/server/default/conf/vault.config.properties";
+        } else if(productName.equals(VaultMasterKeyEncryptorUtil.PINGACCESS_PRODUCT_NAME)){
+            filepath = "/opt/out/instance/conf/vault.config.properties";
+        }
 
         try (InputStream input = new FileInputStream(filepath)) {
 

@@ -60,14 +60,23 @@ vault policy write pingfederate /vault/config/pingfederate-policy.hcl
 
 ## Create Named Role 
 echo "[*] Create Named Role"
-echo $PINGFEDERATE_SUBNET_CIDR
 vault write auth/approle/role/pingfederate policies=pingfederate bind_secret_id=false secret_id_bound_cidrs=$PINGFEDERATE_SUBNET_CIDR
 
 ## Get the Role ids
 echo "[*] Retrieve the role id"
 vault read auth/approle/role/pingfederate/role-id > /data/pingfederate_role_id.txt
 
-#echo "[*] Doing something insane here!!"
-#vault write auth/approle/login role_id=$(vault read -field=role_id auth/approle/role/pingfederate/role-id)
+## SET pingaccess policy
+echo "[*] Set PingAccess Policy..."
+vault policy write pingaccess /vault/config/pingaccess-policy.hcl
+
+## Create Named Role 
+echo "[*] Create Named Role"
+vault write auth/approle/role/pingaccess policies=pingaccess bind_secret_id=false secret_id_bound_cidrs=$PINGACCESS_SUBNET_CIDR
+
+## Get the Role ids
+echo "[*] Retrieve the role id"
+vault read auth/approle/role/pingaccess/role-id > /data/pingaccess_role_id.txt
+
 
 wait ${!}   
