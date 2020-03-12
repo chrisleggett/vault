@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +50,14 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
             this.vaultConfigData = loadVaultConfigData();
 
             // We need to get the roleid client token. This will be used in subsequent requests.
-            this.vaultConfigData.setVaultToken(getTokenFromRoleId(vaultConfigData.getVaultRoleId()));
+
+            if(this.vaultConfigData.getCurrentDeployment().equals(VaultConfigData.DOCKER_COMPOSE_DEPLOYMENT)) {
+                this.vaultConfigData.setVaultToken(getTokenFromRoleId(vaultConfigData.getVaultRoleId()));
+            } else if(this.vaultConfigData.getCurrentDeployment().equals(VaultConfigData.KUBERNETES_DEPLOYMENT)) {
+                this.vaultConfigData.setVaultToken(getTokenFromK8sToken(vaultConfigData.getK8sRoleName()));
+            } else {
+                log.warn("This appears to use a traditional on-prem deployment method. Using the vault token value from properties file.");
+            }
 
             //set the vaultConfig object
             log.debug("Loading the vault configuration.");
@@ -216,6 +226,8 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
             vaultConfigData.setSecretPath(prop.getProperty("vault.secret.path"));
             vaultConfigData.setTlsPemCert(prop.getProperty("vault.tls.server.crt"));
             vaultConfigData.setCreateEncKey(Boolean.getBoolean(prop.getProperty("vault.create.key")));
+            vaultConfigData.setVaultToken(prop.getProperty("vault.api.token"));
+            vaultConfigData.setK8sRoleName(prop.getProperty("vault.auth.k8s.role"));
 
         } catch (IOException | VaultConfigDataException ex) {
             log.error(ex);
@@ -364,5 +376,26 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
             throw new VaultMasterKeyEncryptorException("Unable to create the encryption key.", ex);
         }
         return vaultToken;
+    }
+
+    private String getTokenFromK8sToken(String role) throws VaultMasterKeyEncryptorException {
+
+        String clientToken = "";
+        try{
+            String k8sToken = VaultMasterKeyEncryptorUtil.getK8sTokenFromFile();
+
+            if(k8sToken == null || k8sToken.isEmpty()){
+                log.error("Error: Unable to load the k8s token from the following path: " + VaultMasterKeyEncryptorUtil.K8S_SERVICE_ACCOUNT_TOKEN_PATH);
+                throw new VaultMasterKeyEncryptorException("Error loading the k8s token.");
+            }
+
+                clientToken = this.vault.auth().loginByKubernetes(role, k8sToken).getAuthClientToken();
+
+        } catch(VaultException | IOException ex){
+            throw new VaultMasterKeyEncryptorException("Unable to exchange k8s token for the vault token.", ex);
+
+        }
+
+        return clientToken;
     }
 }

@@ -10,6 +10,11 @@ import java.util.Arrays;
 
 public class VaultConfigData {
 
+    private final String KUBERNETES_ENV_VARIABLE_NAME = "KUBERNETES_SERVICE_HOST";
+
+    public static final String DOCKER_COMPOSE_DEPLOYMENT = "docker-compose";
+    public static final String KUBERNETES_DEPLOYMENT = "kubernetes";
+
     private String vaultAddress;
     private String vaultToken;
     private String vaultRoleId;
@@ -25,6 +30,7 @@ public class VaultConfigData {
     private String tlsPemCert = "";
     private VaultConfig vaultConfig;
     private boolean createEncKey = false;
+    private String k8sRoleName = "";
 
     private final Log log = LogFactory.getLog(this.getClass());
 
@@ -157,5 +163,20 @@ public class VaultConfigData {
 
     public void setCreateEncKey(boolean createKey) {
         this.createEncKey = createKey;
+    }
+
+    public String getCurrentDeployment() {
+        if(System.getenv(KUBERNETES_ENV_VARIABLE_NAME) != null && !System.getenv(KUBERNETES_ENV_VARIABLE_NAME).isEmpty()){
+            return KUBERNETES_DEPLOYMENT;
+        }
+        return DOCKER_COMPOSE_DEPLOYMENT;
+    }
+
+    public String getK8sRoleName() {
+        return k8sRoleName;
+    }
+
+    public void setK8sRoleName(String k8sRoleName) {
+        this.k8sRoleName = k8sRoleName;
     }
 }
