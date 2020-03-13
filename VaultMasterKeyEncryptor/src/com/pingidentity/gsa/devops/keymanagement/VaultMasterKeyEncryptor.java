@@ -76,7 +76,7 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
             }
             else {
                 log.error("The vault is not initialized or unsealed");
-                //throw new VaultMasterKeyEncryptorException("The vault is not initialized or unsealed");
+                throw new VaultMasterKeyEncryptorException("The vault is not initialized or unsealed");
             }
 
         } catch(VaultException | VaultMasterKeyEncryptorException ve){
@@ -101,7 +101,7 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
                 } else {
                     String errorMsg = new String(response.getBody());
                     log.error("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
-                    //throw new VaultMasterKeyEncryptorException("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
+                    throw new VaultMasterKeyEncryptorException("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
                 }
             }
 
@@ -122,9 +122,9 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
             log.error("The vault is not ready. " +
                             "Ensure that this PingFederate node can reach the vault at the following address: " + vaultConfigData.getVaultAddress() +
                             " and the vault is not sealed.");
-            //throw new VaultMasterKeyEncryptorException("The vault is not ready. " +
-            //        "Ensure that this PingFederate node can reach the vault at the following address: " + vaultConfigData.getVaultAddress() +
-            //        " and the vault is not sealed.");
+            throw new VaultMasterKeyEncryptorException("The vault is not ready. " +
+                    "Ensure that this PingFederate node can reach the vault at the following address: " + vaultConfigData.getVaultAddress() +
+                    " and the vault is not sealed.");
         }
         return keyId;
     }
@@ -416,13 +416,8 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
             } else {
                 String errorMsg = new String(response.getBody());
                 log.error("Error: " + errorMsg);
-                //throw new VaultMasterKeyEncryptorException("Error: Unable to get client token from jwt:" + k8sToken+  ".); Msg: " + errorMsg);
+                throw new VaultMasterKeyEncryptorException("Error: Unable to get client token from jwt:" + k8sToken+  ".); Msg: " + errorMsg);
             }
-                //AuthResponse authResponse = this.vault.auth().loginByKubernetes(role, k8sToken);
-                //RestResponse response = authResponse.getRestResponse();
-                //log.debug("K8s Auth Response Body: " + response.getBody());
-                //clientToken = authResponse.getAuthClientToken();
-                //clientToken = this.vault.auth().loginByKubernetes(role, k8sToken).getAuthClientToken();
 
         } catch(RestException | IOException ex){
             log.error("Unable to exchange k8s token for the vault token. Msg: " + ex);
