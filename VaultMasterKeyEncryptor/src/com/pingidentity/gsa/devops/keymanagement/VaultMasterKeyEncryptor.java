@@ -415,6 +415,7 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
                 log.debug("Client Token: " + vaultToken);
             } else {
                 String errorMsg = new String(response.getBody());
+                log.error("Error: " + errorMsg);
                 //throw new VaultMasterKeyEncryptorException("Error: Unable to get client token from jwt:" + k8sToken+  ".); Msg: " + errorMsg);
             }
                 //AuthResponse authResponse = this.vault.auth().loginByKubernetes(role, k8sToken);
