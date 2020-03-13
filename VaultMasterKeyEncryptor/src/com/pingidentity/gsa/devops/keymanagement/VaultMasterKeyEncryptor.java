@@ -75,6 +75,7 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
                 this.vaultReady = true;
             }
             else {
+                log.error("The vault is not initialized or unsealed");
                 throw new VaultMasterKeyEncryptorException("The vault is not initialized or unsealed");
             }
 
