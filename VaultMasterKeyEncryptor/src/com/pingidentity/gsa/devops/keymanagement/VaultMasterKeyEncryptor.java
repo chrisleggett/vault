@@ -380,25 +380,53 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
 
     private String getTokenFromK8sToken(String role) throws VaultMasterKeyEncryptorException {
 
-        String clientToken = "";
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.set("role", role);
+        String payload = "";
+        String vaultToken = "";
         try{
             String k8sToken = VaultMasterKeyEncryptorUtil.getK8sTokenFromFile();
 
             if(k8sToken == null || k8sToken.isEmpty()){
                 log.error("Error: Unable to load the k8s token from the following path: " + VaultMasterKeyEncryptorUtil.K8S_SERVICE_ACCOUNT_TOKEN_PATH);
                 throw new VaultMasterKeyEncryptorException("Error loading the k8s token.");
+            } else {
+                jsonObject.set("jwt", k8sToken);
+                payload = jsonObject.toString();
+                log.debug("k8s Auth Payload: " + payload);
             }
-                AuthResponse authResponse = this.vault.auth().loginByKubernetes(role, k8sToken);
-                RestResponse response = authResponse.getRestResponse();
-                log.debug("K8s Auth Response Body: " + response.getBody());
-                clientToken = authResponse.getAuthClientToken();
+
+            Rest request = new Rest()
+                    .url(this.vaultConfigData.getVaultAddress() + "/v1/auth/kubernetes/login")
+                    .body(payload.getBytes(StandardCharsets.UTF_8))
+                    .sslVerification(vaultConfigData.isVerifySSL())
+                    .connectTimeoutSeconds(vaultConfigData.getOpenTimeoutSeconds())
+                    .readTimeoutSeconds(vaultConfigData.getReadTimeoutSeconds());
+            VaultResponse vaultResponse = new VaultResponse(request.post(), this.maxRetries);
+            RestResponse response = vaultResponse.getRestResponse();
+
+            if (response.getStatus() >= 200 && response.getStatus() <= 299) {
+                String body = new String(response.getBody());
+                log.debug("RoleID login response: " + body);
+                JsonObject jsonResponseObject = Json.parse(body).asObject();
+                vaultToken = jsonResponseObject.get("auth").asObject().get("client_token").asString();
+                log.debug("Success! Retrieved client token from k8s jwt: " + k8sToken +  ".");
+                log.debug("Client Token: " + vaultToken);
+            } else {
+                String errorMsg = new String(response.getBody());
+                throw new VaultMasterKeyEncryptorException("Error: Unable to get client token from jwt:" + k8sToken+  ".); Msg: " + errorMsg);
+            }
+                //AuthResponse authResponse = this.vault.auth().loginByKubernetes(role, k8sToken);
+                //RestResponse response = authResponse.getRestResponse();
+                //log.debug("K8s Auth Response Body: " + response.getBody());
+                //clientToken = authResponse.getAuthClientToken();
                 //clientToken = this.vault.auth().loginByKubernetes(role, k8sToken).getAuthClientToken();
 
-        } catch(VaultException | IOException ex){
+        } catch(RestException | IOException ex){
             throw new VaultMasterKeyEncryptorException("Unable to exchange k8s token for the vault token.", ex);
 
         }
 
-        return clientToken;
+        return vaultToken;
     }
 }
