@@ -388,8 +388,11 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
                 log.error("Error: Unable to load the k8s token from the following path: " + VaultMasterKeyEncryptorUtil.K8S_SERVICE_ACCOUNT_TOKEN_PATH);
                 throw new VaultMasterKeyEncryptorException("Error loading the k8s token.");
             }
-
-                clientToken = this.vault.auth().loginByKubernetes(role, k8sToken).getAuthClientToken();
+                AuthResponse authResponse = this.vault.auth().loginByKubernetes(role, k8sToken);
+                RestResponse response = authResponse.getRestResponse();
+                log.debug("K8s Auth Response Body: " + response.getBody());
+                clientToken = authResponse.getAuthClientToken();
+                //clientToken = this.vault.auth().loginByKubernetes(role, k8sToken).getAuthClientToken();
 
         } catch(VaultException | IOException ex){
             throw new VaultMasterKeyEncryptorException("Unable to exchange k8s token for the vault token.", ex);
