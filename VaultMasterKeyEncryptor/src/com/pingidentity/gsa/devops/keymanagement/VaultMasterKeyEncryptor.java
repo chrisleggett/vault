@@ -22,9 +22,6 @@ import java.io.IOException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,7 +73,7 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
             }
             else {
                 log.error("The vault is not initialized or unsealed");
-                throw new VaultMasterKeyEncryptorException("The vault is not initialized or unsealed");
+                //throw new VaultMasterKeyEncryptorException("The vault is not initialized or unsealed");
             }
 
         } catch(VaultException | VaultMasterKeyEncryptorException ve){
@@ -91,18 +88,32 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
         log.debug("Initializing the vault transit key: " + keyId + ".");
 
         if(this.vaultReady){
-            boolean transitEnabled = isTransitEngineEnabled();
+            boolean transitEnabled = isSecretEngineEnabled("/transit");
 
             if(!transitEnabled) {
                 // Lets enable the transit secrets engine
-                RestResponse response = enableTransitEngine();
+                RestResponse response = enableSecretEngine("transit");
                 if (response.getStatus() >= 200 && response.getStatus() <= 299) {
                     log.debug("This PingFederate node initialized the transit engine.");
                 } else {
                     String errorMsg = new String(response.getBody());
                     log.error("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
-                    throw new VaultMasterKeyEncryptorException("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
+                    //throw new VaultMasterKeyEncryptorException("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
                 }
+            }
+
+            boolean kvEnabled = isSecretEngineEnabled("/secret");
+
+            if(!kvEnabled) {
+                RestResponse response = enableSecretEngine("secret/tune");
+                if (response.getStatus() >= 200 && response.getStatus() <= 299) {
+                    log.debug("This PingFederate node initialized the secret engine.");
+                } else {
+                    String errorMsg = new String(response.getBody());
+                    log.error("Error: Unable to initialize the secret engine. Msg: " + errorMsg);
+                    //throw new VaultMasterKeyEncryptorException("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
+                }
+
             }
 
             if(keyId == null || keyId.isEmpty()){
@@ -122,9 +133,9 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
             log.error("The vault is not ready. " +
                             "Ensure that this PingFederate node can reach the vault at the following address: " + vaultConfigData.getVaultAddress() +
                             " and the vault is not sealed.");
-            throw new VaultMasterKeyEncryptorException("The vault is not ready. " +
-                    "Ensure that this PingFederate node can reach the vault at the following address: " + vaultConfigData.getVaultAddress() +
-                    " and the vault is not sealed.");
+            //throw new VaultMasterKeyEncryptorException("The vault is not ready. " +
+            //        "Ensure that this PingFederate node can reach the vault at the following address: " + vaultConfigData.getVaultAddress() +
+            //        " and the vault is not sealed.");
         }
         return keyId;
     }
@@ -172,7 +183,7 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
 
         log.debug("Decrypting the master key...");
 
-        byte[] decodedPlainText;
+        byte[] decodedPlainText = null;
 
         try{
             String cipherTextString = new String(cipherText, StandardCharsets.UTF_8);
@@ -185,7 +196,7 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
 
         } catch(VaultException ve){
             log.error(ve);
-            throw new MasterKeyEncryptorException("Error: Unable to decrypt the master key.", ve);
+            //throw new MasterKeyEncryptorException("Error: Unable to decrypt the master key.", ve);
         }
         log.debug("Decrypted and Decoded Text: " + new String(decodedPlainText));
         return decodedPlainText;
@@ -268,15 +279,15 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
         return this.vault.debug().health();
     }
 
-    private RestResponse enableTransitEngine() throws VaultMasterKeyEncryptorException {
+    private RestResponse enableSecretEngine(String engineName) throws VaultMasterKeyEncryptorException {
 
-        String path = "/v1/sys/mounts/transit";
+        String path = "/v1/sys/mounts/" + engineName;
 
-        log.debug("PingFederate will attempt to enable the transit engine. The role will need the correct vault permissions.");
+        log.debug("PingFederate will attempt to enable the secret engine: " + engineName +". The role will need the correct vault permissions.");
 
-        RestResponse postResponse;
+        RestResponse postResponse = null;
         String payload = Json.object()
-                .add("type", "transit")
+                .add("type", engineName)
                 .toString();
 
         try {
@@ -290,24 +301,25 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
             VaultResponse vaultResponse = new VaultResponse(request.post(), this.maxRetries);
             postResponse = vaultResponse.getRestResponse();
         } catch(RestException ex){
-            throw new VaultMasterKeyEncryptorException("Unable to enable the vault transit engine.", ex);
+            log.error(ex);
+            //throw new VaultMasterKeyEncryptorException("Unable to enable the vault secret engine: " + engineName  + ".", ex);
         }
          return postResponse;
     }
 
-    private boolean isTransitEngineEnabled() {
+    private boolean isSecretEngineEnabled(String enginePath) {
 
         boolean enabled = false;
 
         try {
             MountResponse mountResponse = this.vault.mounts().list();
             JsonObject jsonResponse = mountResponse.getDataObject();
-            if(jsonResponse.names().contains("transit/")){
-                log.debug("Transit engine is enabled.");
+            if(jsonResponse.names().contains(enginePath)){
+                log.debug("Secret engine is enabled: " + enginePath);
                 enabled = true;
             }
             else {
-                log.debug("The transit engine is disabled.");
+                log.debug("The secret engine is disabled: " + enginePath);
             }
 
         } catch(VaultException ve){
@@ -327,7 +339,7 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
 
         } catch(VaultException ve) {
             log.error(ve);
-            throw new VaultMasterKeyEncryptorException("Error: Unable to create transit key.", ve);
+            //throw new VaultMasterKeyEncryptorException("Error: Unable to create transit key.", ve);
         }
         return true;
     }
@@ -339,18 +351,18 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
         try{
             Map<String, Object> payloadMap = new HashMap<>();
             payloadMap.put("key", key);
-            this.vault.logical().write("cubbyhole/" + vaultConfigData.getSecretPath(),payloadMap);
+            this.vault.logical().write("secret/data/" + vaultConfigData.getSecretPath(),payloadMap);
         }
         catch(VaultException ve){
             log.error(ve);
-            throw new VaultMasterKeyEncryptorException("Error: storing master key in cubbyhole.", ve);
+            throw new VaultMasterKeyEncryptorException("Error: storing master key in kv secret engine.", ve);
         }
     }
 
     private String getTokenFromRoleId(String roleId) throws VaultMasterKeyEncryptorException {
 
         String payload = Json.object().set("role_id", roleId).toString();
-        String vaultToken;
+        String vaultToken = "";
 
         try {
             Rest request = new Rest()
@@ -371,10 +383,12 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
                 log.debug("Client Token: " + vaultToken);
             } else {
                 String errorMsg = new String(response.getBody());
-                throw new VaultMasterKeyEncryptorException("Error: Unable to get client token from role_id:" + roleId+  ".); Msg: " + errorMsg);
+                log.error("Error: Unable to get client token from role_id:" + roleId+  ".); Msg: " + errorMsg);
+                //throw new VaultMasterKeyEncryptorException("Error: Unable to get client token from role_id:" + roleId+  ".); Msg: " + errorMsg);
             }
         } catch(RestException ex){
-            throw new VaultMasterKeyEncryptorException("Unable to create the encryption key.", ex);
+            log.error(ex);
+            //throw new VaultMasterKeyEncryptorException("Unable to create the encryption key.", ex);
         }
         return vaultToken;
     }
@@ -416,12 +430,12 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
             } else {
                 String errorMsg = new String(response.getBody());
                 log.error("Error: " + errorMsg);
-                throw new VaultMasterKeyEncryptorException("Error: Unable to get client token from jwt:" + k8sToken+  ".); Msg: " + errorMsg);
+                //throw new VaultMasterKeyEncryptorException("Error: Unable to get client token from jwt:" + k8sToken+  ".); Msg: " + errorMsg);
             }
 
         } catch(RestException | IOException ex){
             log.error("Unable to exchange k8s token for the vault token. Msg: " + ex);
-            throw new VaultMasterKeyEncryptorException("Unable to exchange k8s token for the vault token.", ex);
+            //throw new VaultMasterKeyEncryptorException("Unable to exchange k8s token for the vault token.", ex);
 
         }
 

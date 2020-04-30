@@ -1,18 +1,37 @@
 {
-    "dist": {
-        "files": [
-            {
-                "name": "VaultMasterKeyEncryptor.jar",
-                "deployment_location": "{PF_HOME}/server/default/lib"
-            }, {
-                "name": "vault-java-driver-5.1.0.jar",
-                "deployment_location": "{PF_HOME}/server/default/lib"
-            }, {
-                "name": "vault.config.properties",
-                "deployment_location": "{PF_HOME}/server/default/conf"
-            }
-
-        ],
-        "docs": {}
-    }
+    "dist": [
+        {
+            "product": "pingfederate",
+            "files": [
+                {
+                    "name": "VaultMasterKeyEncryptor.jar",
+                    "deployment_location": "{PF_HOME}/server/default/lib"
+                },
+                {
+                    "name": "vault-java-driver-5.1.0.jar",
+                    "deployment_location": "{PF_HOME}/server/default/lib"
+                },
+                {
+                    "name": "vault.config.properties",
+                    "deployment_location": "{PF_HOME}/server/default/conf"
+                }
+            ]
+        }, {
+            "product" : "pingaccess",
+            "files": [
+                {
+                    "name": "VaultMasterKeyEncryptor.jar",
+                    "deployment_location": "{PA_HOME}/lib"
+                },
+                {
+                    "name": "vault-java-driver-5.1.0.jar",
+                    "deployment_location": "{PA_HOME}/lib"
+                },
+                {
+                    "name": "vault.config.properties",
+                    "deployment_location": "{PA_HOME}/conf"
+                }
+            ]
+        } ],
+    "docs": {}
 }
