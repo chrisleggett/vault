@@ -11,9 +11,13 @@ import java.util.Arrays;
 public class VaultConfigData {
 
     private final String KUBERNETES_ENV_VARIABLE_NAME = "KUBERNETES_SERVICE_HOST";
+    private final String PRODUCT_OPERATIONAL_MODE = "OPERATIONAL_MODE";
 
     public static final String DOCKER_COMPOSE_DEPLOYMENT = "docker-compose";
     public static final String KUBERNETES_DEPLOYMENT = "kubernetes";
+    public static final String PRODUCT_STANDALONE_MODE = "standalone";
+    public static final String PRODUCT_CLUSTERED_CONSOLE_MODE = "clustered_console";
+    public static final String PRODUCT_CLUSTERED_ENGINE_MODE = "clustered_engine";
 
     private String vaultAddress;
     private String vaultToken;
@@ -31,6 +35,7 @@ public class VaultConfigData {
     private VaultConfig vaultConfig;
     private boolean createEncKey = false;
     private String k8sRoleName = "";
+    private String productMode = "";
 
     private final Log log = LogFactory.getLog(this.getClass());
 
@@ -178,5 +183,17 @@ public class VaultConfigData {
 
     public void setK8sRoleName(String k8sRoleName) {
         this.k8sRoleName = k8sRoleName;
+    }
+
+    public String getProductMode(){
+
+        if(productMode.isEmpty()){
+            if (System.getenv(PRODUCT_OPERATIONAL_MODE) != null && !System.getenv(PRODUCT_OPERATIONAL_MODE).isEmpty()) {
+                productMode = System.getenv(PRODUCT_OPERATIONAL_MODE).toLowerCase();
+            } else {
+                productMode = PRODUCT_STANDALONE_MODE;
+            }
+        }
+        return productMode;
     }
 }

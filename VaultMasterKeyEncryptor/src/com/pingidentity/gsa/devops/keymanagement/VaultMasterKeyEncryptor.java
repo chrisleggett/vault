@@ -98,7 +98,7 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
                 } else {
                     String errorMsg = new String(response.getBody());
                     log.error("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
-                    //throw new VaultMasterKeyEncryptorException("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
+                    throw new VaultMasterKeyEncryptorException("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
                 }
             }
 
@@ -111,7 +111,7 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
                 } else {
                     String errorMsg = new String(response.getBody());
                     log.error("Error: Unable to initialize the secret engine. Msg: " + errorMsg);
-                    //throw new VaultMasterKeyEncryptorException("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
+                    throw new VaultMasterKeyEncryptorException("Error: Unable to initialize the transit engine. Msg: " + errorMsg);
                 }
 
             }
@@ -151,7 +151,11 @@ public class VaultMasterKeyEncryptor implements MasterKeyEncryptor {
 
         //Store the key before encrypting. This helps with config portability and can be used as a backup for restoration. :)
         log.debug("Storing key in secrets engine.");
-        storeKey(plainTextString);
+
+        // Do not store the masterkey for engine nodes.
+        if(!vaultConfigData.getProductMode().equals(VaultConfigData.PRODUCT_CLUSTERED_ENGINE_MODE)) {
+            storeKey(plainTextString);
+        }
 
         //Generate json payload.
         String payload = Json.object()
